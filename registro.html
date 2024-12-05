@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Producto</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            padding: 30px;
+        }
+        .container {
+            max-width: 800px;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .product-list {
+            margin-top: 30px;
+        }
+        .product-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            background-color: #f1f1f1;
+            padding: 10px;
+            border-radius: 8px;
+        }
+        .product-item button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        .product-item button.delete {
+            background-color: #dc3545;
+        }
+        .highlight {
+            background-color: yellow;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2> 𝑹𝒆𝒈𝒊𝒔𝒕𝒓𝒆 𝒔𝒖 𝒑𝒓𝒐𝒅𝒖𝒄𝒕𝒐 𝑴𝒊𝒍𝒊𝒕𝒂</h2>
+        <form id="registroProducto">
+            <!-- Descripción -->
+            <div class="mb-3">
+                <label for="descripcion" class="form-label">Descripción</label>
+                <textarea class="form-control" id="descripcion" name="descripcion" rows="3" required placeholder="Ingresa una descripción del producto"></textarea>
+            </div>
+
+            <!-- Marca -->
+            <div class="mb-3">
+                <label for="marca" class="form-label">Marca</label>
+                <input type="text" class="form-control" id="marca" name="marca" required placeholder="Ingresa la marca del producto">
+            </div>
+
+            <!-- Código -->
+            <div class="mb-3">
+                <label for="codigo" class="form-label">Código</label>
+                <input type="text" class="form-control" id="codigo" name="codigo" required placeholder="Ingresa el código del producto">
+            </div>
+
+            <!-- Botón de envío -->
+            <button type="submit" class="btn btn-primary w-100">Registrar Producto</button>
+        </form>
+
+        <!-- Barra de búsqueda -->
+        <div class="mt-4">
+            <input type="text" id="searchInput" class="form-control" placeholder="Buscar producto..." oninput="searchProduct()">
+        </div>
+
+        <!-- Panel de Productos Registrados -->
+        <div class="product-list" id="productList">
+            <h3 class="mt-5">Productos Registrados</h3>
+            <!-- Aquí se listarán los productos registrados -->
+        </div>
+    </div>
+
+    <!-- Enlace a Bootstrap JS (incluye dependencias de Popper) -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js" integrity="sha384-oBqDVmMz4fnFO9gybJr6lJDNXWDRdR2lH0o1TXJ24mvL4jI93K5jtgf65r6p1Bz9" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js" integrity="sha384-cuXjpe5u0rpNNlJ3kItJ5zHlAp7o3l34+z4jz6GMxVVnCwXlRYwD2b2x5gU8m9lg" crossorigin="anonymous"></script>
+
+    <!-- Script para manejo del formulario y productos -->
+    <script>
+        // Obtener el formulario y el contenedor de productos
+        const form = document.getElementById('registroProducto');
+        const productList = document.getElementById('productList');
+        const searchInput = document.getElementById('searchInput');
+        let products = [];
+
+        // Función para guardar los productos en localStorage
+        function saveProducts() {
+            localStorage.setItem('productos', JSON.stringify(products));
+        }
+
+        // Cargar productos desde localStorage
+        function loadProducts() {
+            const storedProducts = localStorage.getItem('productos');
+            if (storedProducts) {
+                products = JSON.parse(storedProducts);
+                renderProductList();
+            }
+        }
+
+        // Función para renderizar la lista de productos
+        function renderProductList() {
+            productList.innerHTML = ''; // Limpiar la lista antes de renderizar
+            if (products.length === 0) {
+                productList.innerHTML = '<p>No hay productos registrados.</p>';
+            } else {
+                products.forEach((product, index) => {
+                    const productItem = document.createElement('div');
+                    productItem.classList.add('product-item');
+                    productItem.dataset.index = index; // Asignar índice al elemento
+                    productItem.innerHTML = `
+                        <span>
+                            <strong>Descripción:</strong> ${product.descripcion} <br>
+                            <strong>Marca:</strong> ${product.marca} <br>
+                            <strong>Código:</strong> ${product.codigo}
+                        </span>
+                        <div>
+                            <button class="btn btn-warning" onclick="editProduct(${index})">Editar</button>
+                            <button class="btn btn-danger delete" onclick="deleteProduct(${index})">Eliminar</button>
+                        </div>
+                    `;
+                    productList.appendChild(productItem);
+                });
+            }
+        }
+
+        // Función para agregar un producto
+        form.addEventListener('submit', function(event) {
+            event.preventDefault(); // Evitar el envío tradicional del formulario
+
+            const descripcion = document.getElementById('descripcion').value;
+            const marca = document.getElementById('marca').value;
+            const codigo = document.getElementById('codigo').value;
+
+            // Agregar el nuevo producto a la lista
+            products.push({ descripcion, marca, codigo });
+
+            // Guardar en localStorage y renderizar la lista
+            saveProducts();
+            renderProductList();
+
+            // Limpiar el formulario
+            form.reset();
+        });
+
+        // Función para editar un producto
+        function editProduct(index) {
+            const product = products[index];
+            document.getElementById('descripcion').value = product.descripcion;
+            document.getElementById('marca').value = product.marca;
+            document.getElementById('codigo').value = product.codigo;
+
+            // Eliminar el producto actual para evitar duplicados
+            products.splice(index, 1);
+            saveProducts();
+            renderProductList();
+        }
+
+        // Función para eliminar un producto
+        function deleteProduct(index) {
+            products.splice(index, 1); // Eliminar el producto
+            saveProducts(); // Guardar los cambios
+            renderProductList(); // Renderizar la lista actualizada
+        }
+
+        // Función de búsqueda
+        function searchProduct() {
+            const searchTerm = searchInput.value.toLowerCase();
+
+            // Filtrar los productos basados en la búsqueda
+            const filteredProducts = products.filter(product => {
+                return product.descripcion.toLowerCase().includes(searchTerm) || 
+                       product.marca.toLowerCase().includes(searchTerm) || 
+                       product.codigo.toLowerCase().includes(searchTerm);
+            });
+
+            // Renderizar la lista filtrada
+            productList.innerHTML = '';
+            filteredProducts.forEach((product, index) => {
+                const productItem = document.createElement('div');
+                productItem.classList.add('product-item');
+                productItem.dataset.index = index;
+                productItem.innerHTML = `
+                    <span>
+                        <strong>Descripción:</strong> ${product.descripcion} <br>
+                        <strong>Marca:</strong> ${product.marca} <br>
+                        <strong>Código:</strong> ${product.codigo}
+                    </span>
+                    <div>
+                        <button class="btn btn-warning" onclick="editProduct(${index})">Editar</button>
+                        <button class="btn btn-danger delete" onclick="deleteProduct(${index})">Eliminar</button>
+                    </div>
+                `;
+
+                // Resaltar el producto si coincide con la búsqueda
+                if (productItem.innerText.toLowerCase().includes(searchTerm)) {
+                    productItem.classList.add('highlight');
+                }
+
+                productList.appendChild(productItem);
+            });
+        }
+
+        // Cargar los productos cuando la página se carga
+        loadProducts();
+    </script>
+</body>
+</html>
